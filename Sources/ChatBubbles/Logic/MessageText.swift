@@ -20,6 +20,8 @@ public enum MessageText {
         }
         if detectsLinks {
             addLinks(to: &result)
+        } else {
+            removeAutomaticLinks(from: &result)
         }
         return result
     }
@@ -28,6 +30,20 @@ public enum MessageText {
     public static func links(in text: String) -> [URL] {
         attributedString(from: text).runs.compactMap { run in
             run[AttributeScopes.FoundationAttributes.LinkAttribute.self]
+        }
+    }
+
+    /// The Markdown parser links bare web addresses on its own. Without link detection only links
+    /// written as `[title](url)` stay, so a link whose text is its own address is removed.
+    private static func removeAutomaticLinks(from string: inout AttributedString) {
+        let automatic = string.runs.compactMap { run -> Range<AttributedString.Index>? in
+            guard let url = run[AttributeScopes.FoundationAttributes.LinkAttribute.self] else { return nil }
+            let text = String(string[run.range].characters)
+            return text == url.absoluteString || "https://\(text)" == url.absoluteString
+                || "http://\(text)" == url.absoluteString ? run.range : nil
+        }
+        for range in automatic {
+            string[range][AttributeScopes.FoundationAttributes.LinkAttribute.self] = nil
         }
     }
 
