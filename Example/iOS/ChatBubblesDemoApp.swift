@@ -63,6 +63,9 @@ struct PhoneConversationScreen: View {
         ConversationPane(store: store, chat: chat)
             .navigationTitle(chat.title)
             .navigationBarTitleDisplayMode(.inline)
+            // A solid bar, so messages scrolled under it never show through the chat's name.
+            .toolbarBackground(.bar, for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     ChatHeader(store: store, chat: chat)
